@@ -17,15 +17,15 @@ void ofApp::setup(){
     
     gui.add(channelShuffle.setup("channelShuffle", false));
     
-    gui.add(texchipS.setup("", 1.0, 0.0, 1.2));
+    gui.add(texchipS.setup("", .5, 0.0, 1.2));
     gui.add(texchip.setup("texchip",false));
-    gui.add(texchipS.setup("", 1.0, 0.0, 1.2));
+    gui.add(texchipS.setup("", .5, 0.0, 1.2));
 
     gui.add(pixellate.setup("pixellate", false));
     
-    gui.add(noiseS.setup("",.5, 0.0, 1.0));
+    gui.add(noiseS.setup("",.8, 0.0, 1.0));
     gui.add(noise.setup("noise", false));
-    gui.add(noiseS.setup("",.5, 0.0, 1.0));
+    gui.add(noiseS.setup("",.8, 0.0, 1.0));
 
     gui.add(colorFucked.setup("colorFucked", false));
     
@@ -33,31 +33,31 @@ void ofApp::setup(){
     
     gui.add(edgeontop.setup("edge", false));
     
-    gui.add(fringeS.setup("", .5, 0.0, 1.0));
+    gui.add(fringeS.setup("", .2, 0.0, 1.0));
     gui.add(fringe.setup("fringe",false));
-    gui.add(fringeS.setup("", .5, 0.0, 1.0));
+    gui.add(fringeS.setup("", .2, 0.0, 1.0));
     
     gui.add(gray.setup("gray", false));
     
-    gui.add(invertS.setup("", 1.0, 0.0, 10.0));
+    gui.add(invertS.setup("", 7.0, 0.0, 10.0));
     gui.add(invert.setup("invert",false));
-    gui.add(invertS.setup("", 1.0, 0.0, 10.0));
+    gui.add(invertS.setup("", 7.0, 0.0, 10.0));
 
     gui.add(melting.setup("melting", false));
 
     gui.add(pattern.setup("pattern", false));
     
-    gui.add(slantshiftS.setup("", 1.0, 0.0, 1.0));
+    gui.add(slantshiftS.setup("", 0.3, 0.0, 1.0));
     gui.add(slantshift.setup("slant", false));
-    gui.add(slantshiftS.setup("", 1.0, 0.0, 1.0));
+    gui.add(slantshiftS.setup("", 0.3, 0.0, 1.0));
     
-    gui.add(vertnoiseS.setup("",1.0, 0.0, 10.0));
+    gui.add(vertnoiseS.setup("",5.0, 0.0, 10.0));
     gui.add(vertnoise.setup("vertnoise",false));
-    gui.add(vertnoiseS.setup("",1.0, 0.0, 10.0));
+    gui.add(vertnoiseS.setup("",5.0, 0.0, 10.0));
     
     gui.add(vertslideS.setup("",1000.0, 500.0, 4000.0));
     gui.add(vertslide.setup("slide",false));
-    gui.add(vertslideS.setup("",1000.0, 500.0, 4000.0));
+    gui.add(vertslideS.setup("",900.0, 100.0, 1000.0));
   
   gui.add(frame.setup("frameRate: ", ofToString(ofGetFrameRate())));
 
@@ -66,7 +66,7 @@ void ofApp::setup(){
   ranranrandomize = 0;
 
   camWidth = 640;
-  camHeight = 360;
+  camHeight = 480;
 
   myCam.setDeviceID(0);
   myCam.initGrabber(camWidth,camHeight);
@@ -76,9 +76,12 @@ void ofApp::setup(){
     original.allocate(setting);
     
     fx.setup(&original, setting);
+    
+   
 }
 
 void ofApp::update(){
+    frame = ofToString(ofGetFrameRate());
     fx.getfxUnit(KSMR_FRAGFX_NOISE)->bEnable		= noise;
     fx.getfxUnit(KSMR_FRAGFX_NOISE)->u_Volume = noiseS;
     
@@ -104,7 +107,6 @@ void ofApp::update(){
     fx.getfxUnit(KSMR_FRAGFX_VERTSLIDE)->u_Volume = ofNoise(ofGetElapsedTimef())*vertslideS;
     
   myCam.update();
-
   img.setFromPixels(myCam.getPixels());
   img.update();
 }
@@ -118,18 +120,26 @@ void ofApp::draw(){
         ranrandomize = 0;
     }
 
-    //ranranrandomize ++;
-    if(ranranrandomize == 100) {
+    ranranrandomize ++;
+    if(ranranrandomize == 20) {
         blockGlitch = randomBool(.3);
         linesGlitch = randomBool(.3);
         channelShuffle = randomBool(.3);
         disloc = randomBool(.3);
-		pixellate = randomBool(.7);
+		pixellate = randomBool(.9);
 		colorFucked = randomBool(.5);
 		tint = randomBool(.5);
 		gray = randomBool(.3);
 		melting = randomBool(.5);
 		pattern = randomBool(.5);
+        noise = randomBool(.5);
+        edgeontop = randomBool(.5);
+        fringe = randomBool(.8);
+        invert = randomBool(.9);
+        slantshift = randomBool(.5);
+        texchip = randomBool(.5);
+        vertslide = randomBool(.5);
+        vertnoise = randomBool(.5);
 
         ranranrandomize = 0;
     }
@@ -155,7 +165,15 @@ void ofApp::draw(){
     
     original.draw(0,0);
     
-    gui.draw();
+    //gui.draw();
+}
+
+void ofApp::keyPressed(int key){
+    ofPixels pix2;
+    original.readToPixels(pix2);
+    ofImage card;
+    card.setFromPixels(pix2);
+    card.save("1.png");
 }
 
 bool ofApp::randomBool(float piu) {
@@ -304,7 +322,7 @@ void ofApp::glitch_pixel(int size) {
   for (int x = 0; x < camWidth - size; x += size) {
     for (int y = 0; y < camHeight - size; y += size) {
       ofSetColor(img.getColor(x + size, y + size));
-      ofRect(x * ofGetWidth() / camWidth, y * ofGetWidth() / camWidth, size * ofGetWidth() / camWidth + 3, size * ofGetWidth() / camWidth+ 3);
+      ofDrawRectangle(x * ofGetWidth() / camWidth, y * ofGetWidth() / camWidth, size * ofGetWidth() / camWidth + 3, size * ofGetWidth() / camWidth+ 3);
     }
   }
 }
@@ -411,7 +429,7 @@ void ofApp::glitch_pattern() {
       else if (shifts[i] > mostRight) { mostRight = shifts[i]; }
     }
 
-    int start = int(ofRandom(0, camWidth));
+    int start = int(ofRandom(0, camHeight));
     int stop = int(ofRandom(start, camWidth));
 
     for(int inY = 0; inY < randHeight; inY++) {
@@ -434,5 +452,4 @@ void ofApp::glitch_pattern() {
   img.update();
 }
 
-void ofApp::keyPressed(int key){
-}
+
